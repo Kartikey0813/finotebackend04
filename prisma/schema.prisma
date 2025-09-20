@@ -1,0 +1,45 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  password     String
+  role         String
+  walletAddress String?
+  createdAt    DateTime  @default(now())
+  invoices     Invoice[]
+}
+
+model Invoice {
+  id           String   @id @default(uuid())
+  userId       String
+  clientName   String
+  clientEmail  String
+  invoiceNumber String
+  items        Json
+  totalAmount  Float
+  dueDate      DateTime
+  status       String   @default("draft")
+  invoiceHash  String?
+  blockchainTx String?
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id])
+  fraudAlerts  FraudAlert[]
+}
+
+model FraudAlert {
+  id         String   @id @default(uuid())
+  invoiceId  String
+  severity   String
+  reason     String
+  resolved   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  invoice    Invoice  @relation(fields: [invoiceId], references: [id])
+}
